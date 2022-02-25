@@ -1,0 +1,40 @@
+service: dotnet6
+frameworkVersion: '3'
+params:
+  dev:
+    timeout: 10
+    domain: domain-for-dev.com
+  alpha:
+    timeout: 3
+    domain: domain-for-alpha.com
+plugins:
+# uncomment this if you want a custom domain
+#  - serverless-domain-manager
+custom:
+  customDomain:
+    domainName: ${param:domain}
+    createRoute53Record: true
+    endpointType: regional
+    apiType: http
+    autoDomain: true
+provider:
+  name: aws
+  stage: dev
+  region: ap-northeast-2
+  runtime: dotnet6
+  lambdaHashingVersion: 20201221
+  memorySize: 256
+  timeout: ${param:timeout}
+  httpApi:
+    payload: '2.0'
+
+package:
+  artifact: dist.zip
+
+functions:
+  web:
+    handler: dotnet6
+    events:
+      - httpApi:
+          path: /{proxy+}
+          method: '*'
