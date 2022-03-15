@@ -1,0 +1,33 @@
+service: keep-warm
+frameworkVersion: '3'
+params:
+  dev:
+    timeout: 5
+provider:
+  name: aws
+  stage: dev
+  region: ap-northeast-2
+  runtime: dotnet6
+  lambdaHashingVersion: 20201221
+  memorySize: 256
+  timeout: ${param:timeout}
+  httpApi:
+    payload: '2.0'
+
+package:
+  artifact: dist.zip
+
+functions:
+  web:
+    handler: keep_warm
+    events:
+      - httpApi:
+          path: /{proxy+}
+          method: '*'
+      - schedule:
+          rate: cron(* * * * ? *)
+          input:
+            requestContext:
+              http:
+                method: GET
+                path: /health
